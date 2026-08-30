@@ -288,6 +288,30 @@
 
   .stage.wide{ max-width:640px; }
 
+  .filter-line{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin:-8px 0 18px;
+  }
+  .filter-line.visible{ display:flex; }
+  .filter-line label{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#c7d2da;
+    cursor:pointer;
+    user-select:none;
+  }
+  .filter-line input[type="checkbox"]{
+    width:14px; height:14px;
+    accent-color:var(--gold);
+    cursor:pointer;
+  }
+
   .list-card{
     position:relative;
     width:100%;
@@ -391,6 +415,13 @@
 
   <div class="range-line" id="rangeLine"></div>
 
+  <div class="filter-line" id="filterLine">
+    <label>
+      <input type="checkbox" id="noWikidataOnly">
+      Show only articles without a Wikidata item
+    </label>
+  </div>
+
   <div class="stage" id="stage">
     <p class="placeholder">Choose an edition and pull the drawer.<br>Nothing filed yet.</p>
   </div>
@@ -404,6 +435,12 @@ const langSel = document.getElementById('lang');
 const rangeWidthSel = document.getElementById('rangeWidth');
 const rangeLine = document.getElementById('rangeLine');
 const anchorLine = document.getElementById('anchorLine');
+const filterLine = document.getElementById('filterLine');
+const noWikidataOnly = document.getElementById('noWikidataOnly');
+
+// Holds the most recent list-view results so the checkbox can re-render
+// without refetching from the API.
+let lastListState = null;
 
 // Every window is anchored on the calendar date "21 days ago" (three weeks),
 // aligned to UTC midnight. The picker chooses how many days on either side of
@@ -566,6 +603,9 @@ async function dig(){
   stage.className = 'stage';
   stage.innerHTML = '<div class="spinner" role="status" aria-label="Loading"></div>';
   rangeLine.innerHTML = '';
+  lastListState = null;
+  filterLine.classList.remove('visible');
+  noWikidataOnly.checked = false;
 
   try {
     const selectedWidth = parseInt(rangeWidthSel.value, 10);
@@ -609,12 +649,51 @@ async function dig(){
   }
 }
 
+function renderList(){
+  if(!lastListState) return;
+  const { lang, picks, wdMap } = lastListState;
+  const onlyMissing = noWikidataOnly.checked;
+  const visible = onlyMissing ? picks.filter(p => !wdMap[p.pageid]) : picks;
+
+  if(visible.length === 0){
+    stage.innerHTML = `<p class="error">None of the articles found match that filter — try unchecking it.</p>`;
+    return;
+  }
+
+  const rows = visible.map((p, i) => `
+    <li class="list-row">
+      <span class="list-index">${String(i + 1).padStart(2,'0')}</span>
+      <div class="list-body">
+        <a class="list-title-link" href="${pageUrl(lang, p.title)}" target="_blank" rel="noopener">${p.title}</a>
+        <div class="list-date">created ${fmtDate(p.timestamp)}</div>
+        ${wdBadgeHtml(wdMap[p.pageid])}
+      </div>
+    </li>
+  `).join('');
+
+  const countText = onlyMissing
+    ? `${visible.length} of ${picks.length} found`
+    : `${picks.length} found`;
+
+  stage.innerHTML = `
+    <div class="list-card">
+      <div class="list-head">
+        <span class="field">${lang}.wikipedia.org — new articles</span>
+        <span class="list-count">${countText}</span>
+      </div>
+      <ul class="list-rows">${rows}</ul>
+    </div>
+  `;
+}
+
 async function listTwenty(){
   const lang = langSel.value;
   setBusy(true);
   stage.className = 'stage wide';
   stage.innerHTML = '<div class="spinner" role="status" aria-label="Loading"></div>';
   rangeLine.innerHTML = '';
+  lastListState = null;
+  filterLine.classList.remove('visible');
 
   try {
     const selectedWidth = parseInt(rangeWidthSel.value, 10);
@@ -628,26 +707,10 @@ async function listTwenty(){
     const picks = [...candidates].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const wdMap = await fetchWikidataMap(lang, picks.map(p => p.pageid));
 
-    const rows = picks.map((p, i) => `
-      <li class="list-row">
-        <span class="list-index">${String(i + 1).padStart(2,'0')}</span>
-        <div class="list-body">
-          <a class="list-title-link" href="${pageUrl(lang, p.title)}" target="_blank" rel="noopener">${p.title}</a>
-          <div class="list-date">created ${fmtDate(p.timestamp)}</div>
-          ${wdBadgeHtml(wdMap[p.pageid])}
-        </div>
-      </li>
-    `).join('');
-
-    stage.innerHTML = `
-      <div class="list-card">
-        <div class="list-head">
-          <span class="field">${lang}.wikipedia.org — new articles</span>
-          <span class="list-count">${picks.length} found</span>
-        </div>
-        <ul class="list-rows">${rows}</ul>
-      </div>
-    `;
+    lastListState = { lang, picks, wdMap };
+    noWikidataOnly.checked = false;
+    filterLine.classList.add('visible');
+    renderList();
   } catch(err){
     stage.innerHTML = `<p class="error">Couldn't reach Wikipedia's archive just now. Check your connection and try again.</p>`;
   } finally {
@@ -655,6 +718,7 @@ async function listTwenty(){
   }
 }
 
+noWikidataOnly.addEventListener('change', renderList);
 btn.addEventListener('click', dig);
 listBtn.addEventListener('click', listTwenty);
 </script>
