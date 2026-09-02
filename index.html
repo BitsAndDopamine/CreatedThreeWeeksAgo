@@ -67,11 +67,31 @@
     letter-spacing:0.04em;
     color:var(--gold);
     text-align:center;
-    margin:0 0 22px;
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
   }
   .anchor-line b{
     color:var(--card);
     font-weight:600;
+  }
+  .anchor-line .anchor-sep{
+    color:#6d818f;
+  }
+  .anchor-line select{
+    font-size:12px;
+    padding:7px 10px;
+  }
+  .custom-range-line{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin:0 0 22px;
+    flex-wrap:wrap;
   }
   .controls{
     display:flex;
@@ -107,6 +127,63 @@
     padding:10px 12px;
     border-radius:2px;
     cursor:pointer;
+  }
+  select:disabled{ opacity:0.4; cursor:default; }
+
+  .sep-word{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#6d818f;
+  }
+  .custom-range{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--ledger-deep);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:2px;
+    padding:4px 6px;
+  }
+  .custom-range input[type="date"]{
+    font-family:var(--mono);
+    font-size:12.5px;
+    background:transparent;
+    color:var(--card);
+    border:none;
+    padding:6px 4px;
+    cursor:pointer;
+    color-scheme:dark;
+  }
+  .custom-range input[type="date"]:focus-visible{
+    outline:2px solid var(--card);
+    outline-offset:2px;
+    border-radius:2px;
+  }
+  .custom-range .to-sep{
+    color:#6d818f;
+    font-family:var(--mono);
+    font-size:12px;
+  }
+  .custom-range .clear-custom{
+    background:none;
+    border:none;
+    color:#6d818f;
+    font-family:var(--mono);
+    font-size:13px;
+    cursor:pointer;
+    padding:4px 6px;
+    line-height:1;
+    border-radius:2px;
+  }
+  .custom-range .clear-custom:hover{ color:var(--card); }
+  .custom-range .clear-custom:focus-visible{
+    outline:2px solid var(--card);
+    outline-offset:1px;
+  }
+  .custom-range.active{
+    border-color:var(--gold);
   }
   button.dig{
     font-family:var(--mono);
@@ -265,6 +342,55 @@
     margin-top:4px;
   }
 
+  .review-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:3px;
+    line-height:1.4;
+  }
+  .review-badge.reviewed{
+    color:#2b5f3a;
+    border:1px solid #2b5f3a;
+    background:rgba(43,95,58,0.06);
+  }
+  .review-badge.pending{
+    color:#8a5a12;
+    border:1px solid #8a5a12;
+    background:rgba(138,90,18,0.08);
+  }
+  .review-badge.unreviewed{
+    color:var(--stamp);
+    border:1px solid var(--stamp);
+    background:rgba(161,52,36,0.06);
+  }
+  .badge-row{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  .badge-row .wd-badge{ margin-top:0; }
+
+  .filter-line .review-filter{
+    display:none;
+    align-items:center;
+    gap:6px;
+  }
+  .filter-line .review-filter.visible{ display:inline-flex; }
+  .filter-line .review-filter label{
+    cursor:default;
+  }
+  .filter-line .review-filter select{
+    font-size:11.5px;
+    padding:6px 8px;
+  }
+
   .error{
     color:#e9c4bb;
     font-family:var(--mono);
@@ -288,9 +414,10 @@
 
   .filter-line{
     display:none;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
-    gap:8px;
+    gap:10px;
     margin:-8px 0 18px;
   }
   .filter-line.visible{ display:flex; }
@@ -337,6 +464,13 @@
     font-family:var(--mono);
     font-size:11px;
     color:var(--ink-soft);
+  }
+  .list-note{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--ink-soft);
+    padding:0 24px 14px;
+    margin-top:-8px;
   }
   .list-rows{
     list-style:none;
@@ -404,7 +538,27 @@
 around three weeks back or get a list of articles to check them after 
 the initial edits and discussions.</p>
 
-  <div class="anchor-line" id="anchorLine">Three weeks ago: <b>9. Aug. 2026</b></div>
+  <div class="anchor-line" id="anchorLine">
+    <span id="anchorText">Three weeks ago: <b>12. Aug. 2026</b></span>
+    <span class="anchor-sep">–</span>
+    <select id="rangeWidth" aria-label="Date range width">
+      <option value="0">Only that date</option>
+      <option value="1">±1 day</option>
+      <option value="2" selected="selected">±2 days</option>
+      <option value="3">±3 days</option>
+      <option value="7">±7 days</option>
+    </select>
+  </div>
+
+  <div class="custom-range-line">
+    <span class="sep-word">or</span>
+    <div class="custom-range" id="customRange">
+      <input type="date" id="customStart" aria-label="Custom range start date">
+      <span class="to-sep">–</span>
+      <input type="date" id="customEnd" aria-label="Custom range end date">
+      <button type="button" class="clear-custom" id="clearCustom" title="Clear custom range" aria-label="Clear custom date range">✕</button>
+    </div>
+  </div>
 
   <div class="controls">
     
@@ -488,13 +642,6 @@ the initial edits and discussions.</p>
       </optgroup>
     </select>
 
-    <select id="rangeWidth" aria-label="Date range width">
-      <option value="0">Only that date</option>
-      <option value="1">±1 day</option>
-      <option value="2" selected="selected">±2 days</option>
-      <option value="3">±3 days</option>
-      <option value="7">±7 days</option>
-    </select>
     <button class="dig" id="digBtn">Random article</button>
     <button class="dig" id="listBtn">Give me a list</button>
   </div>
@@ -506,6 +653,15 @@ the initial edits and discussions.</p>
       <input type="checkbox" id="noWikidataOnly">
       Show only articles without a Wikidata item
     </label>
+    <span class="review-filter" id="reviewFilterWrap">
+      <label for="reviewFilter">Review status:</label>
+      <select id="reviewFilter" aria-label="Filter by review status">
+        <option value="all">All</option>
+        <option value="unreviewed">Unreviewed only</option>
+        <option value="pending">Pending changes only</option>
+        <option value="reviewed">Reviewed only</option>
+      </select>
+    </span>
   </div>
 
   <div class="stage" id="stage">
@@ -524,9 +680,15 @@ const listBtn = document.getElementById('listBtn');
 const langSel = document.getElementById('lang');
 const rangeWidthSel = document.getElementById('rangeWidth');
 const rangeLine = document.getElementById('rangeLine');
-const anchorLine = document.getElementById('anchorLine');
+const anchorText = document.getElementById('anchorText');
 const filterLine = document.getElementById('filterLine');
 const noWikidataOnly = document.getElementById('noWikidataOnly');
+const reviewFilterWrap = document.getElementById('reviewFilterWrap');
+const reviewFilterSel = document.getElementById('reviewFilter');
+const customRangeBox = document.getElementById('customRange');
+const customStart = document.getElementById('customStart');
+const customEnd = document.getElementById('customEnd');
+const clearCustomBtn = document.getElementById('clearCustom');
 
 // Holds the most recent list-view results so the checkbox can re-render
 // without refetching from the API.
@@ -557,7 +719,36 @@ function widthToWindow(width){
   return { start, endExclusive, displayStart: start, displayEnd, width };
 }
 
+// Parses the two <input type="date"> fields into a window, provided both
+// are filled in. Dates are interpreted as UTC midnight, same as the anchor
+// logic above, so the two modes stay consistent. If the fields are reversed
+// (end before start) they're swapped rather than treated as an error.
+function customRangeFromInputs(){
+  const startVal = customStart.value;
+  const endVal = customEnd.value;
+  if(!startVal || !endVal) return null;
+  let s = new Date(startVal + 'T00:00:00Z');
+  let e = new Date(endVal + 'T00:00:00Z');
+  if(isNaN(s) || isNaN(e)) return null;
+  if(s > e){ const tmp = s; s = e; e = tmp; }
+  const endExclusive = new Date(e);
+  endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+  return { start: s, endExclusive, displayStart: s, displayEnd: e, width: null };
+}
+
+function syncRangeControls(){
+  const active = !!customRangeFromInputs();
+  rangeWidthSel.disabled = active;
+  customRangeBox.classList.toggle('active', active);
+}
+
 async function getCandidates(lang, selectedWidth){
+  const custom = customRangeFromInputs();
+  if(custom){
+    const candidates = await fetchNewPagesWindow(lang, custom.start, custom.endExclusive);
+    return { candidates, window: custom, widened: false };
+  }
+
   const startIdx = Math.max(0, RANGE_OPTIONS.indexOf(selectedWidth));
   let candidates = [];
   let usedWindow = widthToWindow(RANGE_OPTIONS[startIdx]);
@@ -577,7 +768,7 @@ function fmtRangeBoundary(d){
 }
 
 function renderAnchorLine(){
-  anchorLine.innerHTML = `Three weeks ago: <b>${fmtRangeBoundary(anchorMidnightUTC())}</b>`;
+  anchorText.innerHTML = `Three weeks ago: <b>${fmtRangeBoundary(anchorMidnightUTC())}</b>`;
 }
 renderAnchorLine();
 
@@ -613,10 +804,41 @@ async function fetchNewPagesWindow(lang, startDate, endExclusiveDate){
   return data.query ? data.query.recentchanges : [];
 }
 
+// Detects the API warning MediaWiki emits when `flagged` isn't a recognized
+// prop value — i.e. the wiki doesn't have the FlaggedRevs extension enabled.
+// Not every language edition uses it (notably it's common on de/pl/ru/eo
+// among others, but absent on en and many smaller wikis), so we check for
+// this per response rather than assuming.
+function warnsUnsupportedFlagged(data){
+  if(!data.warnings) return false;
+  try {
+    return JSON.stringify(data.warnings).toLowerCase().includes('flagged');
+  } catch(e){
+    return false;
+  }
+}
+
+// Maps a raw `flagged` API object to one of three states. A page with no
+// `flagged` object at all has never been reviewed. One with `pending_since`
+// has a reviewed stable version but newer, not-yet-reviewed edits on top.
+// Otherwise it's fully reviewed (current revision == stable revision).
+function reviewStatusFromFlagged(flagged){
+  if(!flagged) return 'unreviewed';
+  return flagged.pending_since ? 'pending' : 'reviewed';
+}
+
+// Deleting a page normally drops its creation entry from recentchanges too,
+// so this is mostly a safety net for the rare straggler (timing gaps,
+// undeletion/redeletion, etc.) rather than the common case. A page the API
+// can't resolve by its id comes back with a `missing` key instead of content.
+function pageExists(page){
+  return !!page && !('missing' in page);
+}
+
 async function fetchExtract(lang, pageid){
   const params = new URLSearchParams({
     action: 'query',
-    prop: 'extracts|pageimages|info|pageprops',
+    prop: 'extracts|pageimages|info|pageprops|flagged',
     exintro: '1',
     explaintext: '1',
     exsentences: '5',
@@ -630,19 +852,28 @@ async function fetchExtract(lang, pageid){
   });
   const res = await fetch(`${API(lang)}?${params}`);
   const data = await res.json();
-  return data.query.pages[pageid];
+  const page = data.query.pages[pageid];
+  const reviewStatus = warnsUnsupportedFlagged(data)
+    ? null
+    : reviewStatusFromFlagged(page.flagged);
+  return { page, reviewStatus };
 }
 
-// Batch-fetch wikidata item ids for a list of pageids (chunked, since the API
-// caps the number of pageids per request for non-bot accounts).
-async function fetchWikidataMap(lang, pageids){
-  const map = {};
+// Batch-fetch wikidata item ids and review (FlaggedRevs) status for a list
+// of pageids (chunked, since the API caps the number of pageids per request
+// for non-bot accounts). Returns flaggedSupported=false if the wiki doesn't
+// run the FlaggedRevs extension, so callers can hide review-related UI.
+async function fetchPageMetaMap(lang, pageids){
+  const wdMap = {};
+  const reviewMap = {};
+  const existsMap = {};
+  let flaggedSupported = true;
   const chunkSize = 50;
   for(let i = 0; i < pageids.length; i += chunkSize){
     const chunk = pageids.slice(i, i + chunkSize);
     const params = new URLSearchParams({
       action: 'query',
-      prop: 'pageprops',
+      prop: 'pageprops|flagged|info',
       ppprop: 'wikibase_item',
       pageids: chunk.join('|'),
       format: 'json',
@@ -651,23 +882,47 @@ async function fetchWikidataMap(lang, pageids){
     try {
       const res = await fetch(`${API(lang)}?${params}`);
       const data = await res.json();
+      if(warnsUnsupportedFlagged(data)) flaggedSupported = false;
       if(data.query && data.query.pages){
         for(const pid in data.query.pages){
           const pg = data.query.pages[pid];
-          map[pid] = (pg.pageprops && pg.pageprops.wikibase_item) || null;
+          // Missing pages get a negative object key (-1, -2, ...) rather
+          // than their real page id, so we key our maps off the echoed-back
+          // pg.pageid instead of the raw object key wherever it's present.
+          const key = pg.pageid !== undefined ? pg.pageid : pid;
+          wdMap[key] = (pg.pageprops && pg.pageprops.wikibase_item) || null;
+          reviewMap[key] = reviewStatusFromFlagged(pg.flagged);
+          existsMap[key] = pageExists(pg);
         }
       }
     } catch(e){
       // leave this chunk unmapped rather than failing the whole list
     }
   }
-  return map;
+  if(!flaggedSupported){
+    for(const pid in reviewMap) reviewMap[pid] = null;
+  }
+  return { wdMap, reviewMap, existsMap, flaggedSupported };
 }
 
 function wdBadgeHtml(qid){
   return qid
     ? `<a class="wd-badge linked" href="https://www.wikidata.org/wiki/${qid}" target="_blank" rel="noopener">⬡ Wikidata ${qid}</a>`
     : `<span class="wd-badge unlinked">⬡ no Wikidata item</span>`;
+}
+
+// Returns '' (renders nothing) when status is null, i.e. this wiki edition
+// doesn't run FlaggedRevs at all, so the badge only ever appears where the
+// distinction actually applies.
+function reviewBadgeHtml(status){
+  if(status === null || status === undefined) return '';
+  const variants = {
+    reviewed: { cls: 'reviewed', label: '✓ Reviewed' },
+    pending: { cls: 'pending', label: '⏳ Pending changes' },
+    unreviewed: { cls: 'unreviewed', label: '! Unreviewed' }
+  };
+  const v = variants[status] || variants.unreviewed;
+  return `<span class="review-badge ${v.cls}">${v.label}</span>`;
 }
 
 function fmtDate(ts){
@@ -695,6 +950,7 @@ async function dig(){
   rangeLine.innerHTML = '';
   lastListState = null;
   filterLine.classList.remove('visible');
+  reviewFilterWrap.classList.remove('visible');
   noWikidataOnly.checked = false;
 
   try {
@@ -706,8 +962,27 @@ async function dig(){
       return;
     }
 
-    const pick = candidates[Math.floor(Math.random() * candidates.length)];
-    const page = await fetchExtract(lang, pick.pageid);
+    const pool = [...candidates];
+    let pick = null;
+    let page = null;
+    let reviewStatus = null;
+    while(pool.length > 0){
+      const idx = Math.floor(Math.random() * pool.length);
+      const candidate = pool[idx];
+      pool.splice(idx, 1);
+      const result = await fetchExtract(lang, candidate.pageid);
+      if(pageExists(result.page)){
+        pick = candidate;
+        page = result.page;
+        reviewStatus = result.reviewStatus;
+        break;
+      }
+    }
+
+    if(!page){
+      stage.innerHTML = `<p class="error">Every article in this window turned out to have been deleted since. Try a different range or edition.</p>`;
+      return;
+    }
 
     const thumb = page.thumbnail
       ? `<img class="thumb" src="${page.thumbnail.source}" alt="">`
@@ -727,6 +1002,7 @@ async function dig(){
           <div class="meta-group">
             <span class="meta">page id ${page.pageid}</span>
             ${wdBadgeHtml(qid)}
+            ${reviewBadgeHtml(reviewStatus)}
           </div>
           <a class="open" href="${url}" target="_blank" rel="noopener">Read the full article →</a>
         </div>
@@ -741,12 +1017,17 @@ async function dig(){
 
 function renderList(){
   if(!lastListState) return;
-  const { lang, picks, wdMap } = lastListState;
+  const { lang, picks, wdMap, reviewMap, deletedCount } = lastListState;
   const onlyMissing = noWikidataOnly.checked;
-  const visible = onlyMissing ? picks.filter(p => !wdMap[p.pageid]) : picks;
+  const reviewFilterVal = reviewFilterSel.value;
+  const filtersActive = onlyMissing || reviewFilterVal !== 'all';
+
+  let visible = picks;
+  if(onlyMissing) visible = visible.filter(p => !wdMap[p.pageid]);
+  if(reviewFilterVal !== 'all') visible = visible.filter(p => reviewMap[p.pageid] === reviewFilterVal);
 
   if(visible.length === 0){
-    stage.innerHTML = `<p class="error">None of the articles found match that filter — try unchecking it.</p>`;
+    stage.innerHTML = `<p class="error">None of the articles found match those filters — try loosening them.</p>`;
     return;
   }
 
@@ -756,14 +1037,21 @@ function renderList(){
       <div class="list-body">
         <a class="list-title-link" href="${pageUrl(lang, p.title)}" target="_blank" rel="noopener">${p.title}</a>
         <div class="list-date">created ${fmtDate(p.timestamp)}</div>
-        ${wdBadgeHtml(wdMap[p.pageid])}
+        <div class="badge-row">
+          ${wdBadgeHtml(wdMap[p.pageid])}
+          ${reviewBadgeHtml(reviewMap[p.pageid])}
+        </div>
       </div>
     </li>
   `).join('');
 
-  const countText = onlyMissing
+  const countText = filtersActive
     ? `${visible.length} of ${picks.length} found`
     : `${picks.length} found`;
+
+  const deletedNote = deletedCount > 0
+    ? `<div class="list-note">${deletedCount} deleted article${deletedCount === 1 ? '' : 's'} filtered out of this window</div>`
+    : '';
 
   stage.innerHTML = `
     <div class="list-card">
@@ -771,6 +1059,7 @@ function renderList(){
         <span class="field">${lang}.wikipedia.org — new articles</span>
         <span class="list-count">${countText}</span>
       </div>
+      ${deletedNote}
       <ul class="list-rows">${rows}</ul>
     </div>
   `;
@@ -784,6 +1073,7 @@ async function listTwenty(){
   rangeLine.innerHTML = '';
   lastListState = null;
   filterLine.classList.remove('visible');
+  reviewFilterWrap.classList.remove('visible');
 
   try {
     const selectedWidth = parseInt(rangeWidthSel.value, 10);
@@ -794,12 +1084,22 @@ async function listTwenty(){
       return;
     }
 
-    const picks = [...candidates].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const wdMap = await fetchWikidataMap(lang, picks.map(p => p.pageid));
+    const allPicks = [...candidates].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const { wdMap, reviewMap, existsMap, flaggedSupported } = await fetchPageMetaMap(lang, allPicks.map(p => p.pageid));
 
-    lastListState = { lang, picks, wdMap };
+    const picks = allPicks.filter(p => existsMap[p.pageid] !== false);
+    const deletedCount = allPicks.length - picks.length;
+
+    if(picks.length === 0){
+      stage.innerHTML = `<p class="error">Every article in this window turned out to have been deleted since. Try a different range or edition.</p>`;
+      return;
+    }
+
+    lastListState = { lang, picks, wdMap, reviewMap, deletedCount };
     noWikidataOnly.checked = false;
+    reviewFilterSel.value = 'all';
     filterLine.classList.add('visible');
+    reviewFilterWrap.classList.toggle('visible', flaggedSupported);
     renderList();
   } catch(err){
     stage.innerHTML = `<p class="error">Couldn't reach Wikipedia's archive just now. Check your connection and try again.</p>`;
@@ -809,9 +1109,26 @@ async function listTwenty(){
 }
 
 noWikidataOnly.addEventListener('change', renderList);
+reviewFilterSel.addEventListener('change', renderList);
 btn.addEventListener('click', dig);
 listBtn.addEventListener('click', listTwenty);
+
+// Custom date range wiring: filling in both fields overrides the preset
+// width dropdown; clearing either field (or hitting the ✕) hands control
+// back to it.
+const todayStr = new Date().toISOString().slice(0, 10);
+customStart.max = todayStr;
+customEnd.max = todayStr;
+customStart.addEventListener('input', syncRangeControls);
+customEnd.addEventListener('input', syncRangeControls);
+clearCustomBtn.addEventListener('click', () => {
+  customStart.value = '';
+  customEnd.value = '';
+  syncRangeControls();
+});
+syncRangeControls();
 </script>
+
 
 
 </body></html>
